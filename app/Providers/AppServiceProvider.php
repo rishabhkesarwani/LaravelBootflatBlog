@@ -4,6 +4,8 @@ namespace App\Providers;
 
 use Illuminate\Support\ServiceProvider;
 use Illuminate\Support\Facades\Schema;
+use App\Post;
+use App\Billing\Stripe;
 
 class AppServiceProvider extends ServiceProvider
 {
@@ -15,6 +17,9 @@ class AppServiceProvider extends ServiceProvider
     public function boot()
     {
         Schema::defaultStringLength(191);
+        view()->composer('layouts.sidebar', function($view) {
+            $view->with('archives', Post::archives());
+        });
     }
 
     /**
@@ -27,5 +32,8 @@ class AppServiceProvider extends ServiceProvider
         if ($this->app->environment() == 'local') {
             $this->app->register('Laracasts\Generators\GeneratorsServiceProvider');
         }
+        $this->app->singleton(Stripe::class, function() {
+            return new Stripe(config('services.stripe.secret'));
+        });
     }
 }
